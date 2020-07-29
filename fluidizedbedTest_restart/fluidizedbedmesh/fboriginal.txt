@@ -1,0 +1,29 @@
+// Gmsh project created on Tue Apr 21 16:32:11 2020
+//+
+SetFactory("OpenCASCADE");
+Cylinder(1) = {0, 0, 0, 0, 0, 17.375, 1, 2*Pi};
+//+
+Cylinder(2) = {0, 0, 0, 0, 0, 1.5, 0.5, 2*Pi};
+//+
+
+//+
+Translate {0, 0, 15} {
+  Volume{2}; 
+}
+//+
+Cylinder(3) = {0, 0, 0, 0, 0, 1.5, 0.5, 2*Pi};
+//+
+Translate {0, 0, 1.5} {
+  Volume{3}; 
+}
+//+
+Rotate {{0, 1, 0}, {0, 0, 1.5}, Pi/2} {
+  Volume{3}; 
+}
+//+
+Rotate {{0, 1, 0}, {0, 0, 15}, Pi/2} {
+  Volume{2}; 
+}
+//+
+
+}

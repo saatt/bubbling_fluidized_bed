@@ -1,0 +1,381 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  5                                     |
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      topoSetDict;
+}
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+actions
+(
+// so here i want to make 4 parts of the patch. so i need to chisel out each section from the whole 
+// set of boundary cells, so that's three templates i can chisel out of
+    
+// Firstly i take the basic patch and turn it into a set of faces.
+    {
+        name    fullfb;
+        type    faceSet;
+        action  new;
+        source  patchToFace;
+        sourceInfo
+        {
+            name "fb.stl";
+        }
+    }
+// now i want to make the fbGasinNevagation so that i can subtract the faces from the fb set later
+    {
+        name    fbGasinNegativeCell;
+        type    cellSet;
+        action  new;
+        source  boxToCell;
+        sourceInfo
+        {
+	  box (-1.1 -1.1 0.01)(1.1 1.1 17.39);            
+        }
+    }
+
+    {
+        name    fbGasinNegativeFace;
+        type    faceSet;
+        action  new;
+        source  cellToFace;
+        sourceInfo
+        {
+            set    fbGasinNegativeCell;
+            option all;
+        }
+   }
+
+// making fbBioinOutNegativeCell/Face if do subtract I can get two cylinders 
+    {
+        name    fbBioinOutNegativeCell;
+        type    cellSet;
+        action  new;
+        source  boxToCell;
+        sourceInfo
+        {
+            box (-1.1 -1.1 -0.1)(1.1 1.1 17.39);
+        }
+    }
+
+    {
+        name    fbBioinOutNegativeFace;
+        type	faceSet;
+        action  new;
+        source  cellToFace;
+        sourceInfo
+        {
+            set    fbOutNegativeCell;
+            option all;
+        }
+   }
+
+// making subfbBioinNegativeCell/Face one of the two cylinders
+    {
+        name    subfbBioinNegativeCell;
+        type    cellSet;
+        action  new;
+        source  boxToCell;
+        sourceInfo
+        {
+            box (1 -0.6 1.4)(1.6 0.6 2.35);
+        }
+    }
+
+    {
+        name    subfbBioinNegativeFace;
+        type	faceSet;
+        action  new;
+        source  cellToFace;
+        sourceInfo
+        {
+            set    subfbBioinNegativeCell;
+            option all;
+        }
+   }
+
+// making fbOutNegativeCell/Face to get the fbOut surface
+    {
+        name    fbOutNegativeCell;
+        type    cellSet;
+        action  new;
+        source  cylinderToCell;
+        sourceInfo
+        {
+            p1 (0.9 0 15);
+	    p2 (1.49 0 15);
+	    radius 0.6;
+        }
+    }
+
+    {
+        name    fbOutNegativeFace;
+        type	faceSet;
+        action  new;
+        source  cellToFace;
+        sourceInfo
+        {
+            set    fbOutNegativeCell;
+            option all;
+        }
+   }
+
+// making subfbOutNegativeCell/Face one of the two cylinders
+    {
+        name    subfbOutNegativeCell;
+        type    cellSet;
+        action  new;
+        source  boxToCell;
+        sourceInfo
+        {
+            box (1 -0.6 14.4)(1.6 0.6 15.6);
+        }
+    }
+
+    {
+        name    subfbOutNegativeFace;
+        type	faceSet;
+        action  new;
+        source  cellToFace;
+        sourceInfo
+        {
+            set    subfbOutNegativeCell;
+            option all;
+        }
+   }
+
+// making fbBioinNegativeCell/Face to get the fbBioin surface
+    {
+        name    fbBioinNegativeCell;
+        type    cellSet;
+        action  new;
+        source  cylinderToCell;
+        sourceInfo
+        {
+            p1 (0.9 0 1.75);
+	    p2 (1.49 0 1.75);
+	    radius 0.6;
+        }
+    }
+
+    {
+        name    fbBioinNegativeFace;
+        type	faceSet;
+        action  new;
+        source  cellToFace;
+        sourceInfo
+        {
+            set    fbBioinNegativeCell;
+            option all;
+        }
+   }
+
+/////////////////////////////////////////////////////////////////
+// now it is time, we can start making the fbGasin patches //////
+/////////////////////////////////////////////////////////////////
+    {
+	name 	fbGasin;
+        type    faceSet;
+        action  new;
+        source  faceToFace;
+	sourceInfo
+	{ 
+		set fullfb;
+	}	
+     }
+
+     {
+        name    fbGasin;
+        type    faceSet;
+        action  delete;
+        source  faceToFace;
+	sourceInfo
+        {
+                set fbGasinNegativeFace;
+        }
+     }
+
+// and now we can also make the fbOut patches
+    {
+	name 	fbBioinOut;
+        type    faceSet;
+        action  new;
+        source  faceToFace;
+	sourceInfo
+	{	
+		set fullfb;
+		
+	}	
+     }
+     {
+        name    fbBioinOut;
+        type    faceSet;
+        action  delete;
+        source  faceToFace;
+	sourceInfo
+        {
+                set fbBioinOutNegativeFace;
+        }
+     }
+
+    {
+	name 	subfbOut;
+        type    faceSet;
+        action  new;
+        source  faceToFace;
+	sourceInfo
+	{	
+		set fbBioinOut;
+		
+	}	
+     }
+     {
+        name    subfbOut;
+        type    faceSet;
+        action  delete;
+        source  faceToFace;
+	sourceInfo
+        {
+                set subfbBioinNegativeFace;
+        }
+     }
+
+    {
+	name 	fbOut;
+        type    faceSet;
+        action  new;
+        source  faceToFace;
+	sourceInfo
+	{	
+		set subfbOut;
+		
+	}	
+     }
+     {
+        name    fbOut;
+        type    faceSet;
+        action  delete;
+        source  faceToFace;
+	sourceInfo
+        {
+                set fbOutNegativeFace;
+        }
+     }
+
+// make walls
+// and now we can also make the fbBioin patches
+/*
+     {
+	name 	fbBioinOut;
+        type    faceSet;
+        action  new;
+        source  faceToFace;
+	sourceInfo
+	{	
+		set fullfb;
+		
+	}	
+     }
+     {
+        name    fbBioinOut;
+        type    faceSet;
+        action  delete;
+        source  faceToFace;
+	sourceInfo
+        {
+                set fbBioinOutNegativeFace;
+        }
+     }
+
+    {
+	name 	subfbBioin;
+        type    faceSet;
+        action  new;
+        source  faceToFace;
+	sourceInfo
+	{	
+		set fbBioinOut;
+		
+	}	
+     }
+     {
+        name    subfbBioin;
+        type    faceSet;
+        action  delete;
+        source  faceToFace;
+	sourceInfo
+        {
+                set subfbOutNegativeFace;
+        }
+     }
+
+    {
+	name 	fbBioin;
+        type    faceSet;
+        action  new;
+        source  faceToFace;
+	sourceInfo
+	{	
+		set subfbBioin;
+		
+	}	
+     }
+     {
+        name    fbBioin;
+        type    faceSet;
+        action  delete;
+        source  faceToFace;
+	sourceInfo
+        {
+                set fbBioinNegativeFace;
+        }
+     }
+*/
+// lastly we can have the curved wall segments
+
+   {
+        name    fb;
+        type    faceSet;
+        action  new;
+        source  faceToFace;
+	sourceInfo
+        {
+                set fullfb;
+        }
+    }
+
+    {
+        name    fb;
+        type    faceSet;
+        action  delete;
+        source  faceToFace;
+	sourceInfo
+        {
+                set fbOut;
+        }
+    }
+
+{
+        name    fb;
+        type    faceSet;
+        action  delete;
+        source  faceToFace;
+	sourceInfo
+        {
+                set fbGasin;
+        }
+    }
+
+
+);
+
+// ************************************************************************* //

@@ -1,0 +1,677 @@
+mesh was built before - using old mesh
+
+//   run_liggghts_init_DEM   //
+
+/home/hwb/CFDEM/bubbling_fluidized_bed/fluidizedbedTest_restart/DEM
+
+LIGGGHTS (Version LIGGGHTS-PUBLIC 3.8.0, compiled 2017-12-08-22:31:09 by hwb, git commit unknown)
+atom_style      granular
+atom_modify     map array
+communicate     single vel yes
+
+boundary        f f f
+newton          off
+
+units           si
+
+region          reg block -0.05 0.05 -0.05 0.05 -0.01 0.5 units box
+create_box      2 reg
+Created orthogonal box = (-0.05 -0.05 -0.01) to (0.05 0.05 0.5)
+  1 by 1 by 4 MPI processor grid
+
+neighbor        0.0001 bin
+neigh_modify    delay 0
+
+
+# Material properties required for granular pair styles
+fix         m1 all property/global youngsModulus peratomtype 5.e6 5.e6
+fix         m2 all property/global poissonsRatio peratomtype 0.45 0.45
+fix         m3 all property/global coefficientRestitution peratomtypepair 2 1 0.5 0.5 0.5
+fix         m4 all property/global coefficientFriction peratomtypepair 2 0.2 0.2 0.2 0.2
+fix         m5 all property/global coefficientRollingFriction peratomtypepair 2 0 0.2 0.2 0.2
+
+# pair style
+pair_style  gran model hertz tangential history # Hertzian without cohesion
+pair_coeff  * *
+
+# timestep, gravity
+timestep    0.00001
+fix         gravi all gravity 9.81 vector 0.0 0.0 -1.0
+
+##WALLS######################################################################################################
+#fix         zwalls1 all wall/gran model hertz tangential history primitive type 1  zplane 0.0             ##
+#fix         zwalls2 all wall/gran model hertz tangential history primitive type 1  zplane 0.0553          ##
+#fix         cylwalls all wall/gran model hertz tangential history primitive type 1 zcylinder 0.01385 0. 0.##
+#############################################################################################################
+
+#import mesh from cad:
+fix  fb1 all mesh/surface file STL/fluidizedbedriser1.stl type 1 scale 0.0254
+
+Reading STL file 'STL/fluidizedbedriser1.stl' (mesh processing step 1/3) 
+fix  fb2 all mesh/surface file STL/fluidizedbedriser2.stl type 1 scale 0.0254
+
+Reading STL file 'STL/fluidizedbedriser2.stl' (mesh processing step 1/3) 
+fix  fbBioin all mesh/surface file STL/fluidizedbedBioin.stl type 1 scale 0.0254
+
+Reading STL file 'STL/fluidizedbedBioin.stl' (mesh processing step 1/3) 
+fix  fbGasin all mesh/surface file STL/fluidizedbedGasin.stl type 1 scale 0.0254
+
+Reading STL file 'STL/fluidizedbedGasin.stl' (mesh processing step 1/3) 
+fix  fbOut all mesh/surface file STL/fluidizedbedOut.stl type 1 scale 0.0254
+
+Reading STL file 'STL/fluidizedbedOut.stl' (mesh processing step 1/3) 
+
+#use the imported mesh as granular wall
+
+fix	walls all wall/gran model hertz tangential history mesh n_meshes 5 meshes fb1 fb2 fbBioin fbGasin fbOut
+
+# particle distributions and insertion ### insert sand ###
+region      bc cylinder z 0.0 0.0 0.0235 0.25 0.254 units box
+fix         pts1 all particletemplate/sphere 15485863 atom_type 1 density constant 2300 radius constant 0.0005
+fix         pdd1 all particledistribution/discrete 15485867 1 pts1 1.0
+Fix particledistribution/discrete (id pdd1): distribution based on mass%:
+    pts1: d=1.000000e-03 (max. bounding sphere) mass%=100.000000%
+Fix particledistribution/discrete (id pdd1): distribution based on number%:
+    pts1: d=1.000000e-03 (max. bounding sphere) number%=100.000000%
+fix         ins all insert/rate/region seed 32452843 distributiontemplate pdd1 mass 0.002 massrate 0.01 insert_every 1000 overlapcheck yes vel constant 0. 0. -1 region bc ntry_mc 10000
+
+# apply nve integration to all particles that are inserted as single particles
+fix         integr all nve/sphere
+
+# screen output
+compute         rke all erotate/sphere
+thermo_style    custom step atoms ke c_rke vol
+thermo          1000
+thermo_modify   lost ignore norm no
+compute_modify  thermo_temp dynamic yes
+WARNING: Changing thermo_temp compute object. This object is deprecated and will be removed in the future. (../compute.cpp:161)
+
+# insert the first particles so that dump is not empty
+run         1
+Setting up run at Tue Jul 14 03:55:26 2020
+
+Import and parallelization of mesh fb1 containing 9645 triangle(s) successful
+Import and parallelization of mesh fb2 containing 1950 triangle(s) successful
+Import and parallelization of mesh fbBioin containing 105 triangle(s) successful
+Import and parallelization of mesh fbGasin containing 2620 triangle(s) successful
+Import and parallelization of mesh fbOut containing 10343 triangle(s) successful
+INFO: Resetting random generator for region bc
+INFO: Particle insertion ins: 83.037362 particles every 1000 steps - particle rate 8303.736161  (mass rate 1.000000e-02)
+      1660 particles (mass 1.999100e-03) within 19000 steps
+Memory usage per processor = 48.5072 Mbytes
+    Step    Atoms         KinEng            rke         Volume 
+       0        0              0              0         0.0051 
+insertion: proc 2 at 0 %
+insertion: proc 2 at 10 %
+insertion: proc 2 at 20 %
+insertion: proc 2 at 30 %
+insertion: proc 2 at 40 %
+insertion: proc 2 at 50 %
+insertion: proc 2 at 60 %
+insertion: proc 2 at 70 %
+insertion: proc 2 at 80 %
+insertion: proc 2 at 90 %
+insertion: proc 2 at 100 %
+INFO: Particle insertion ins: inserted 84 particle templates (mass 1.011593e-04) at step 1
+ - a total of 84 particle templates (mass 1.011593e-04) inserted so far.
+       1       84  5.0584604e-05              0         0.0051 
+Loop time of 0.0189779 on 4 procs for 1 steps with 84 atoms, finish time Tue Jul 14 03:55:27 2020
+
+
+Pair  time (%) = 7.45058e-06 (0.0392593)
+Neigh time (%) = 0.00732201 (38.5818)
+Comm  time (%) = 1.23382e-05 (0.0650134)
+Outpt time (%) = 0.00759155 (40.0021)
+Other time (%) = 0.00404453 (21.3118)
+
+Nlocal:    21 ave 84 max 0 min
+Histogram: 3 0 0 0 0 0 0 0 0 1
+Nghost:    0 ave 0 max 0 min
+Histogram: 4 0 0 0 0 0 0 0 0 0
+Neighs:    0.25 ave 1 max 0 min
+Histogram: 3 0 0 0 0 0 0 0 0 1
+
+Total # of neighbors = 1
+Ave neighs/atom = 0.0119048
+Neighbor list builds = 1
+Dangerous builds = 0
+# Create imaging information
+dump	dumpstl all stl 5000 post/dump*.stl
+# dump        dmp all custom 2000 post/dump*.liggghts_init id type x y z ix iy iz vx vy vz fx fy fz omegax omegay omegaz radius
+dump        dmp all custom/vtk 2000 post/dump*.liggghts_init.vtk id type x y z ix iy iz vx vy vz fx fy fz omegax omegay omegaz radius
+
+
+run         30000 upto
+Setting up run at Tue Jul 14 03:55:27 2020
+
+Memory usage per processor = 48.5113 Mbytes
+    Step    Atoms         KinEng            rke         Volume 
+       1       84  5.0584604e-05              0         0.0051 
+    1000       84  6.0984678e-05              0         0.0051 
+insertion: proc 2 at 0 %
+insertion: proc 2 at 10 %
+insertion: proc 2 at 20 %
+insertion: proc 2 at 30 %
+insertion: proc 2 at 40 %
+insertion: proc 2 at 50 %
+insertion: proc 2 at 60 %
+insertion: proc 2 at 70 %
+insertion: proc 2 at 80 %
+insertion: proc 2 at 90 %
+insertion: proc 2 at 100 %
+INFO: Particle insertion ins: inserted 83 particle templates (mass 9.995501e-05) at step 1001
+ - a total of 167 particle templates (mass 2.011143e-04) inserted so far.
+    2000      167  0.00013262686              0         0.0051 
+insertion: proc 2 at 0 %
+insertion: proc 2 at 10 %
+insertion: proc 2 at 20 %
+insertion: proc 2 at 30 %
+insertion: proc 2 at 40 %
+insertion: proc 2 at 50 %
+insertion: proc 2 at 60 %
+insertion: proc 2 at 70 %
+insertion: proc 2 at 80 %
+insertion: proc 2 at 90 %
+insertion: proc 2 at 100 %
+INFO: Particle insertion ins: inserted 83 particle templates (mass 9.995501e-05) at step 2001
+ - a total of 250 particle templates (mass 3.010693e-04) inserted so far.
+    3000      250  0.00021649056              0         0.0051 
+insertion: proc 2 at 0 %
+insertion: proc 2 at 10 %
+insertion: proc 2 at 20 %
+insertion: proc 2 at 30 %
+insertion: proc 2 at 40 %
+insertion: proc 2 at 50 %
+insertion: proc 2 at 60 %
+insertion: proc 2 at 70 %
+insertion: proc 2 at 80 %
+insertion: proc 2 at 90 %
+insertion: proc 2 at 100 %
+INFO: Particle insertion ins: inserted 83 particle templates (mass 9.995501e-05) at step 3001
+ - a total of 333 particle templates (mass 4.010243e-04) inserted so far.
+    4000      333   0.0003135377              0         0.0051 
+insertion: proc 2 at 0 %
+insertion: proc 2 at 10 %
+insertion: proc 2 at 20 %
+insertion: proc 2 at 30 %
+insertion: proc 2 at 40 %
+insertion: proc 2 at 50 %
+insertion: proc 2 at 60 %
+insertion: proc 2 at 70 %
+insertion: proc 2 at 80 %
+insertion: proc 2 at 90 %
+insertion: proc 2 at 100 %
+INFO: Particle insertion ins: inserted 83 particle templates (mass 9.995501e-05) at step 4001
+ - a total of 416 particle templates (mass 5.009793e-04) inserted so far.
+    5000      416  0.00042473022              0         0.0051 
+insertion: proc 2 at 0 %
+insertion: proc 2 at 10 %
+insertion: proc 2 at 20 %
+insertion: proc 2 at 30 %
+insertion: proc 2 at 40 %
+insertion: proc 2 at 50 %
+insertion: proc 2 at 60 %
+insertion: proc 2 at 70 %
+insertion: proc 2 at 80 %
+insertion: proc 2 at 90 %
+insertion: proc 2 at 100 %
+INFO: Particle insertion ins: inserted 83 particle templates (mass 9.995501e-05) at step 5001
+ - a total of 499 particle templates (mass 6.009343e-04) inserted so far.
+    6000      499  0.00055103003              0         0.0051 
+insertion: proc 2 at 0 %
+insertion: proc 2 at 10 %
+insertion: proc 2 at 20 %
+insertion: proc 2 at 30 %
+insertion: proc 2 at 40 %
+insertion: proc 2 at 50 %
+insertion: proc 2 at 60 %
+insertion: proc 2 at 70 %
+insertion: proc 2 at 80 %
+insertion: proc 2 at 90 %
+insertion: proc 2 at 100 %
+INFO: Particle insertion ins: inserted 83 particle templates (mass 9.995501e-05) at step 6001
+ - a total of 582 particle templates (mass 7.008893e-04) inserted so far.
+    7000      582  0.00069339907              0         0.0051 
+insertion: proc 2 at 0 %
+insertion: proc 2 at 10 %
+insertion: proc 2 at 20 %
+insertion: proc 2 at 30 %
+insertion: proc 2 at 40 %
+insertion: proc 2 at 50 %
+insertion: proc 2 at 60 %
+insertion: proc 2 at 70 %
+insertion: proc 2 at 80 %
+insertion: proc 2 at 90 %
+insertion: proc 2 at 100 %
+INFO: Particle insertion ins: inserted 83 particle templates (mass 9.995501e-05) at step 7001
+ - a total of 665 particle templates (mass 8.008443e-04) inserted so far.
+    8000      665  0.00085279926              0         0.0051 
+insertion: proc 2 at 0 %
+insertion: proc 2 at 10 %
+insertion: proc 2 at 20 %
+insertion: proc 2 at 30 %
+insertion: proc 2 at 40 %
+insertion: proc 2 at 50 %
+insertion: proc 2 at 60 %
+insertion: proc 2 at 70 %
+insertion: proc 2 at 80 %
+insertion: proc 2 at 90 %
+insertion: proc 2 at 100 %
+INFO: Particle insertion ins: inserted 83 particle templates (mass 9.995501e-05) at step 8001
+ - a total of 748 particle templates (mass 9.007993e-04) inserted so far.
+    9000      748   0.0010301925              0         0.0051 
+insertion: proc 2 at 0 %
+insertion: proc 2 at 10 %
+insertion: proc 2 at 20 %
+insertion: proc 2 at 30 %
+insertion: proc 2 at 40 %
+insertion: proc 2 at 50 %
+insertion: proc 2 at 60 %
+insertion: proc 2 at 70 %
+insertion: proc 2 at 80 %
+insertion: proc 2 at 90 %
+insertion: proc 2 at 100 %
+INFO: Particle insertion ins: inserted 83 particle templates (mass 9.995501e-05) at step 9001
+ - a total of 831 particle templates (mass 1.000754e-03) inserted so far.
+   10000      831   0.0012265408              0         0.0051 
+insertion: proc 2 at 0 %
+insertion: proc 2 at 10 %
+insertion: proc 2 at 20 %
+insertion: proc 2 at 30 %
+insertion: proc 2 at 40 %
+insertion: proc 2 at 50 %
+insertion: proc 2 at 60 %
+insertion: proc 2 at 70 %
+insertion: proc 2 at 80 %
+insertion: proc 2 at 90 %
+insertion: proc 2 at 100 %
+INFO: Particle insertion ins: inserted 83 particle templates (mass 9.995501e-05) at step 10001
+ - a total of 914 particle templates (mass 1.100709e-03) inserted so far.
+   11000      914    0.001442806              0         0.0051 
+insertion: proc 2 at 0 %
+insertion: proc 2 at 10 %
+insertion: proc 2 at 20 %
+insertion: proc 2 at 30 %
+insertion: proc 2 at 40 %
+insertion: proc 2 at 50 %
+insertion: proc 2 at 60 %
+insertion: proc 2 at 70 %
+insertion: proc 2 at 80 %
+insertion: proc 2 at 90 %
+insertion: proc 2 at 100 %
+INFO: Particle insertion ins: inserted 84 particle templates (mass 1.011593e-04) at step 11001
+ - a total of 998 particle templates (mass 1.201869e-03) inserted so far.
+   12000      998   0.0016806761              0         0.0051 
+insertion: proc 2 at 0 %
+insertion: proc 2 at 10 %
+insertion: proc 2 at 20 %
+insertion: proc 2 at 30 %
+insertion: proc 2 at 40 %
+insertion: proc 2 at 50 %
+insertion: proc 2 at 60 %
+insertion: proc 2 at 70 %
+insertion: proc 2 at 80 %
+insertion: proc 2 at 90 %
+insertion: proc 2 at 100 %
+INFO: Particle insertion ins: inserted 83 particle templates (mass 9.995501e-05) at step 12001
+ - a total of 1081 particle templates (mass 1.301824e-03) inserted so far.
+   13000     1081   0.0019397965              0         0.0051 
+insertion: proc 2 at 0 %
+insertion: proc 2 at 10 %
+insertion: proc 2 at 20 %
+insertion: proc 2 at 30 %
+insertion: proc 2 at 40 %
+insertion: proc 2 at 50 %
+insertion: proc 2 at 60 %
+insertion: proc 2 at 70 %
+insertion: proc 2 at 80 %
+insertion: proc 2 at 90 %
+insertion: proc 2 at 100 %
+INFO: Particle insertion ins: inserted 83 particle templates (mass 9.995501e-05) at step 13001
+ - a total of 1164 particle templates (mass 1.401779e-03) inserted so far.
+   14000     1164   0.0022217313              0         0.0051 
+insertion: proc 2 at 0 %
+insertion: proc 2 at 10 %
+insertion: proc 2 at 20 %
+insertion: proc 2 at 30 %
+insertion: proc 2 at 40 %
+insertion: proc 2 at 50 %
+insertion: proc 2 at 60 %
+insertion: proc 2 at 70 %
+insertion: proc 2 at 80 %
+insertion: proc 2 at 90 %
+insertion: proc 2 at 100 %
+INFO: Particle insertion ins: inserted 83 particle templates (mass 9.995501e-05) at step 14001
+ - a total of 1247 particle templates (mass 1.501734e-03) inserted so far.
+   15000     1247   0.0025041271  2.0473577e-06         0.0051 
+insertion: proc 2 at 0 %
+insertion: proc 2 at 10 %
+insertion: proc 2 at 20 %
+insertion: proc 2 at 30 %
+insertion: proc 2 at 40 %
+insertion: proc 2 at 50 %
+insertion: proc 2 at 60 %
+insertion: proc 2 at 70 %
+insertion: proc 2 at 80 %
+insertion: proc 2 at 90 %
+insertion: proc 2 at 100 %
+INFO: Particle insertion ins: inserted 83 particle templates (mass 9.995501e-05) at step 15001
+ - a total of 1330 particle templates (mass 1.601689e-03) inserted so far.
+   16000     1330   0.0027430213  1.1676705e-05         0.0051 
+insertion: proc 2 at 0 %
+insertion: proc 2 at 10 %
+insertion: proc 2 at 20 %
+insertion: proc 2 at 30 %
+insertion: proc 2 at 40 %
+insertion: proc 2 at 50 %
+insertion: proc 2 at 60 %
+insertion: proc 2 at 70 %
+insertion: proc 2 at 80 %
+insertion: proc 2 at 90 %
+insertion: proc 2 at 100 %
+INFO: Particle insertion ins: inserted 83 particle templates (mass 9.995501e-05) at step 16001
+ - a total of 1413 particle templates (mass 1.701644e-03) inserted so far.
+   17000     1413   0.0029183385  3.2834368e-05         0.0051 
+insertion: proc 2 at 0 %
+insertion: proc 2 at 10 %
+insertion: proc 2 at 20 %
+insertion: proc 2 at 30 %
+insertion: proc 2 at 40 %
+insertion: proc 2 at 50 %
+insertion: proc 2 at 60 %
+insertion: proc 2 at 70 %
+insertion: proc 2 at 80 %
+insertion: proc 2 at 90 %
+insertion: proc 2 at 100 %
+INFO: Particle insertion ins: inserted 83 particle templates (mass 9.995501e-05) at step 17001
+ - a total of 1496 particle templates (mass 1.801599e-03) inserted so far.
+   18000     1496   0.0030164312  7.2670532e-05         0.0051 
+insertion: proc 2 at 0 %
+insertion: proc 2 at 10 %
+insertion: proc 2 at 20 %
+insertion: proc 2 at 30 %
+insertion: proc 2 at 40 %
+insertion: proc 2 at 50 %
+insertion: proc 2 at 60 %
+insertion: proc 2 at 70 %
+insertion: proc 2 at 80 %
+insertion: proc 2 at 90 %
+insertion: proc 2 at 100 %
+INFO: Particle insertion ins: inserted 83 particle templates (mass 9.995501e-05) at step 18001
+ - a total of 1579 particle templates (mass 1.901554e-03) inserted so far.
+   19000     1579   0.0031020707  0.00011145132         0.0051 
+insertion: proc 2 at 0 %
+insertion: proc 2 at 10 %
+insertion: proc 2 at 20 %
+insertion: proc 2 at 30 %
+insertion: proc 2 at 40 %
+insertion: proc 2 at 50 %
+insertion: proc 2 at 60 %
+insertion: proc 2 at 70 %
+insertion: proc 2 at 80 %
+insertion: proc 2 at 90 %
+insertion: proc 2 at 100 %
+INFO: Particle insertion ins: inserted 81 particle templates (mass 9.754645e-05) at step 19001
+ - a total of 1660 particle templates (mass 1.999100e-03) inserted so far.
+   20000     1660   0.0032117633  0.00013331226         0.0051 
+   21000     1660   0.0032138347  0.00017137337         0.0051 
+   22000     1660   0.0031721396  0.00020523386         0.0051 
+   23000     1660   0.0031327868  0.00022972281         0.0051 
+   24000     1660   0.0030677335  0.00026422408         0.0051 
+   25000     1660   0.0029762836  0.00028267765         0.0051 
+   26000     1660    0.002879045  0.00030622268         0.0051 
+   27000     1660   0.0027752127  0.00032279059         0.0051 
+   28000     1660   0.0026618774  0.00033622706         0.0051 
+   29000     1660   0.0024915914  0.00035214313         0.0051 
+   30000     1660   0.0023386871  0.00036374023         0.0051 
+Loop time of 222.708 on 4 procs for 29999 steps with 1660 atoms, finish time Tue Jul 14 03:59:09 2020
+
+
+Pair  time (%) = 0.197435 (0.0886517)
+Neigh time (%) = 79.9937 (35.9186)
+Comm  time (%) = 8.80886 (3.95533)
+Outpt time (%) = 0.666944 (0.299469)
+Other time (%) = 133.042 (59.738)
+
+Nlocal:    415 ave 1483 max 0 min
+Histogram: 2 1 0 0 0 0 0 0 0 1
+Nghost:    2.25 ave 6 max 0 min
+Histogram: 2 0 0 0 0 1 0 0 0 1
+Neighs:    3.5 ave 14 max 0 min
+Histogram: 3 0 0 0 0 0 0 0 0 1
+
+Total # of neighbors = 14
+Ave neighs/atom = 0.00843373
+Neighbor list builds = 11856
+Dangerous builds = 0
+
+write_restart   post/restart/liggghts.restart
+System init for write_restart ...
+Decomposing case.
+/*---------------------------------------------------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  5.x                                   |
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+Build  : 5.x-197d9d3bf20a
+Exec   : decomposePar -force
+Date   : Jul 14 2020
+Time   : 03:59:10
+Host   : "hwb-virtual-machine"
+PID    : 82391
+I/O    : uncollated
+Case   : /home/hwb/CFDEM/bubbling_fluidized_bed/fluidizedbedTest_restart/CFD
+nProcs : 1
+sigFpe : Enabling floating point exception trapping (FOAM_SIGFPE).
+fileModificationChecking : Monitoring run-time modified files using timeStampMaster (fileModificationSkew 10)
+allowSystemOperations : Allowing user-supplied system call operations
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+Create time
+
+
+
+Decomposing mesh region0
+
+Create mesh
+
+Calculating distribution of cells
+Selecting decompositionMethod simple
+
+Finished decomposition in 0.53 s
+
+Calculating original mesh data
+
+Distributing cells to processors
+
+Distributing faces to processors
+
+Distributing points to processors
+
+Constructing processor meshes
+Reading hexRef8 data : cellLevel
+Reading hexRef8 data : pointLevel
+Reading hexRef8 data : level0Edge
+
+Processor 0
+    Number of cells = 129161
+    Number of faces shared with processor 1 = 4311
+    Number of faces shared with processor 2 = 2808
+    Number of faces shared with processor 3 = 1
+    Number of processor patches = 3
+    Number of processor faces = 7120
+    Number of boundary faces = 34026
+
+Processor 1
+    Number of cells = 127751
+    Number of faces shared with processor 0 = 4311
+    Number of faces shared with processor 2 = 2
+    Number of faces shared with processor 3 = 3519
+    Number of processor patches = 3
+    Number of processor faces = 7832
+    Number of boundary faces = 34840
+
+Processor 2
+    Number of cells = 127751
+    Number of faces shared with processor 0 = 2808
+    Number of faces shared with processor 1 = 2
+    Number of faces shared with processor 3 = 4303
+    Number of processor patches = 3
+    Number of processor faces = 7113
+    Number of boundary faces = 34608
+
+Processor 3
+    Number of cells = 129161
+    Number of faces shared with processor 0 = 1
+    Number of faces shared with processor 1 = 3519
+    Number of faces shared with processor 2 = 4303
+    Number of processor patches = 3
+    Number of processor faces = 7823
+    Number of boundary faces = 35580
+
+Number of processor faces = 14944
+Max number of cells = 129161 (0.548826% above average 128456)
+Max number of processor patches = 3 (0% above average 3)
+Max number of faces between processors = 7832 (4.81799% above average 7472)
+
+Time = 0
+
+Processor 0: field transfer
+Processor 1: field transfer
+Processor 2: field transfer
+Processor 3: field transfer
+
+End
+
+do nothing.
+
+//   run_parallel_cfdemSolverPiso_fluidizedbedTestMPI_CFDDEM   //
+
+/home/hwb/CFDEM/bubbling_fluidized_bed/fluidizedbedTest_restart/CFD
+
+/*---------------------------------------------------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  5.x                                   |
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+Build  : 5.x-197d9d3bf20a
+Exec   : cfdemSolverPiso -parallel
+Date   : Jul 14 2020
+Time   : 03:59:20
+Host   : "hwb-virtual-machine"
+PID    : 82416
+I/O    : uncollated
+Case   : /home/hwb/CFDEM/bubbling_fluidized_bed/fluidizedbedTest_restart/CFD
+nProcs : 4
+Slaves : 
+3
+(
+"hwb-virtual-machine.82417"
+"hwb-virtual-machine.82418"
+"hwb-virtual-machine.82419"
+)
+
+Pstream initialized with:
+    floatTransfer      : 0
+    nProcsSimpleSum    : 0
+    commsType          : nonBlocking
+    polling iterations : 0
+sigFpe : Enabling floating point exception trapping (FOAM_SIGFPE).
+fileModificationChecking : Monitoring run-time modified files using timeStampMaster (fileModificationSkew 10)
+allowSystemOperations : Allowing user-supplied system call operations
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+Create time
+
+Create mesh for time = 0
+
+
+PISO: Operating solver in PISO mode
+
+Reading field p
+
+Reading physical velocity field U
+Note: only if voidfraction at boundary is 1, U is superficial velocity!!!
+
+
+Reading momentum exchange field Ksl
+
+
+Reading voidfraction field voidfraction = (Vgas/Vparticle)
+
+
+Creating density field rho
+
+Reading particle velocity field Us
+
+Reading/calculating face flux field phi
+
+Generating interstitial face flux field phiByVoidfraction
+
+Selecting incompressible transport model Newtonian
+Selecting turbulence model type laminar
+Selecting laminar stress model Stokes
+No finite volume options present
+
+
+Reading g
+Selecting locateModel engine
+Selecting dataExchangeModel twoWayMPI
+Starting up LIGGGHTS for first time execution
+Executing input script '../DEM/in.liggghts_run'
+LIGGGHTS (Version LIGGGHTS-PUBLIC 3.8.0, compiled 2017-12-08-22:42:34 by hwb, git commit unknown)
+Reading restart file ...
+WARNING: Restart file version does not match LIGGGHTS version (../read_restart.cpp:507)
+   --> restart file = Version LIGGGHTS-PUBLIC 3.8.0, compiled 2017-12-08-22:31:09 by hwb, git commit unknown
+version 3 8
+version 3 8
+version 3 8
+   --> LIGGGHTS = Version LIGGGHTS-PUBLIC 3.8.0, compiled 2017-12-08-22:42:34 by hwb, git commit unknown
+version 3 8
+WARNING: Restart file used different 3d processor grid (../read_restart.cpp:587)
+  orthogonal box = (-0.05 -0.05 -0.01) to (0.05 0.05 0.5)
+  2 by 2 by 1 MPI processor grid
+  1660 atoms
+ERROR on proc 0: Cannot open mesh file STL/fluidizedbedriser1.stl. FYI: This file is required, but data will be taken from restart file (../fix_mesh.cpp:412)
+--------------------------------------------------------------------------
+MPI_ABORT was invoked on rank 0 in communicator MPI COMMUNICATOR 3 DUP FROM 0 
+with errorcode 1.
+
+NOTE: invoking MPI_ABORT causes Open MPI to kill all MPI processes.
+You may or may not see output from other processes, depending on
+exactly when Open MPI kills them.
+--------------------------------------------------------------------------
+/*---------------------------------------------------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  5.x                                   |
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+Build  : 5.x-197d9d3bf20a
+Exec   : reconstructPar -noLagrangian
+Date   : Jul 14 2020
+Time   : 03:59:21
+Host   : "hwb-virtual-machine"
+PID    : 82424
+I/O    : uncollated
+Case   : /home/hwb/CFDEM/bubbling_fluidized_bed/fluidizedbedTest_restart/CFD
+nProcs : 1
+sigFpe : Enabling floating point exception trapping (FOAM_SIGFPE).
+fileModificationChecking : Monitoring run-time modified files using timeStampMaster (fileModificationSkew 10)
+allowSystemOperations : Allowing user-supplied system call operations
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+Create time
+
+Skipping reconstructing lagrangian positions and fields
+
+--> FOAM Warning : 
+    From function int main(int, char**)
+    in file reconstructPar.C at line 256
+    No times selectedsimulation finished? ...press enter to proceed
+simulation finished? ...press enter to proceed

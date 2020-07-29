@@ -1,0 +1,84 @@
+# Pour biomass particles into fb
+log             ../DEM/log.liggghts
+thermo_log      ../DEM/post/thermo.txt
+
+atom_style      granular
+atom_modify     map array
+communicate     single vel yes
+
+boundary        f f f
+newton          off
+
+units           si
+processors      2 2 1
+
+# read the restart file
+read_restart    ../DEM/post/restart/liggghts.restart
+
+neighbor        0.0005 bin
+neigh_modify    delay 0
+
+# Material properties required for granular pair styles
+fix         m1 all property/global youngsModulus peratomtype 5.e6 5.e6
+fix         m2 all property/global poissonsRatio peratomtype 0.45 0.45
+fix         m3 all property/global coefficientRestitution peratomtypepair 2 1 0.5 0.5 0.5
+fix         m4 all property/global coefficientFriction peratomtypepair 2 0.2 0.2 0.2 0.2
+fix         m5 all property/global coefficientRollingFriction peratomtypepair 2 0 0.2 0.2 0.2
+
+# pair style
+pair_style  gran model hertz tangential history # Hertzian without cohesion
+pair_coeff  * *
+
+# timestep, gravity
+timestep    0.00001
+fix         gravi all gravity 9.81 vector 0.0 0.0 -1.0
+
+#import mesh from cad:
+fix  fb1 all mesh/surface file ../DEM/STL/fluidizedbedriser1.stl type 1 scale 0.0254
+fix  fb2 all mesh/surface file ../DEM/STL/fluidizedbedriser2.stl type 1 scale 0.0254
+fix  fbBioin all mesh/surface file ../DEM/STL/fluidizedbedBioin.stl type 1 scale 0.0254
+fix  fbGasin all mesh/surface file ../DEM/STL/fluidizedbedGasin.stl type 1 scale 0.0254
+fix  fbOut all mesh/surface file ../DEM/STL/fluidizedbedOut.stl type 1 scale 0.0254
+
+#use the imported mesh as granular wall
+#fix  walls all wall/gran model hertz tangential history rolling_friction epsd2 mesh n_meshes 2 meshes fb fbGasin 
+fix	walls all wall/gran model hertz tangential history mesh n_meshes 4 meshes fb1 fb2  fbGasin fbBioin
+
+
+#particle distributions and insertion ### insert biomass  
+
+region     bc2 cylinder x 0.0 0.0444 0.0125 0.035 0.038 units box
+fix        pts2 all particletemplate/sphere 49979693 atom_type 1 density constant 1500 radius constant 0.001               
+fix        pdd2 all particledistribution/discrete 86028157 1 pts2 1.0
+#fix        ins2 all insert/stream seed 86028121 distributiontemplate pdd2 mass 0.002 massrate 0.001 insert_every 1000 overlapcheck yes vel constant -1 0.0 0.0  insertion_face fbBioin
+#extrude_length 5
+fix        ins2 all insert/rate/region seed 86028121 distributiontemplate pdd2 mass 0.002 massrate 0.001 insert_every 1000 overlapcheck yes vel constant -0.1 0.0 0.0 region bc2 ntry_mc 10000
+
+# apply nve integration to all particles that are inserted as single particles
+fix         integr all nve/sphere
+
+# cfd coupling
+fix     cfd all couple/cfd couple_every 100 mpi
+fix     cfd2 all couple/cfd/force
+
+# apply nve integration to all particles that are inserted as single particles
+fix     integr all nve/sphere
+
+# center of mass
+compute     centerOfMass all com
+
+# compute total dragforce
+compute     dragtotal all reduce sum f_dragforce[1] f_dragforce[2] f_dragforce[3]
+
+# screen output
+ compute         rke all erotate/sphere 
+# Define a computation that calculates the rotational kinetic energy of a group of spherical particles. The rotational energy is computed as 1/2Iw^2, where I is the moment of inertia for a sphere and w is # the particle’s angular velocity.
+thermo_style    custom step atoms ke c_rke vol c_centerOfMass[3] c_dragtotal[1] c_dragtotal[2] c_dragtotal[3]
+thermo          100
+thermo_modify   lost ignore norm no
+compute_modify  thermo_temp dynamic yes
+
+dump        dmp all custom/vtk 2000 post/dump*.liggghts_restart.vtk id type x y z vx vy vz fx fy fz f_dragforce[1] f_dragforce[2] f_dragforce[3] radius 
+
+run 1
+
