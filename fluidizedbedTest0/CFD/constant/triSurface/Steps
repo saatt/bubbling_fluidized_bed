@@ -1,0 +1,6 @@
+cd constant/triSurface
+
+surfaceAutoPatch fb.obj CAD.obj 100
+
+surfaceConvert CAD.obj CAD.vtk
+

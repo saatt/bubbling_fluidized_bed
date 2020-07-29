@@ -1,0 +1,61 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  1.6                                   |
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+//************************ Superfical velocity Us=voidfraction*U ********************//
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       volVectorField;
+    location    "0";
+    object      Us;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+dimensions      [0 1 -1 0 0 0 0];
+
+internalField   uniform (0 0 0);
+
+boundaryField
+{
+    // wall
+	CAD_patch1
+    {
+        type            zeroGradient;
+    }
+	CAD_patch3
+    {
+        type            zeroGradient;
+    }
+	fbBioin
+    {
+        type            zeroGradient;
+
+    }
+	
+    fbGasin
+    {
+        type            zeroGradient;
+        //type            fixedValue;
+        //value           uniform (0 0 1);
+    }
+    fbOut
+    {
+        type            zeroGradient;
+    }
+}
+
+/*{
+	"(CAD_patch1|CAD_patch3|fbBioin|fbOut|fbGasin)"
+	{
+		type fixedValue;
+		value uniform (0 0 0);
+	}
+}*/
+
+
+// ************************************************************************* //
