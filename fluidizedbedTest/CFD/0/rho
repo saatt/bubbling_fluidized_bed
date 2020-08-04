@@ -16,7 +16,7 @@ FoamFile
 
 dimensions      [1 -3 0 0 0 0 0];
 
-internalField   uniform 1.21;  // air
+internalField   uniform 1.19;  // air
 
 boundaryField
 {
@@ -37,7 +37,8 @@ boundaryField
 	
     fbGasin
     {
-        type            zeroGradient;
+	type            fixedValue;
+	value		uniform 1.19;
     }
     fbOut
     {

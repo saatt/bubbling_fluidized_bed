@@ -38,7 +38,7 @@ solvers
         //solver          smoothSolver;
         //smoother        symGaussSeidel;
 
-        solver 		PBiCGStab;//PBiCG;
+        solver 		PBiCG;//PBiCGStab;
 	preconditioner  DILU;      
 	tolerance       1e-05;
         relTol          0.1; //0;

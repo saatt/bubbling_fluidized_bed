@@ -120,7 +120,7 @@ castellatedMeshControls
 	CAD
         {
             // Surface-wise min and max refinement level
-		level (2 3);
+		level (1 1);
 		//patchInfo {type wall;}
 		
 
@@ -128,19 +128,19 @@ castellatedMeshControls
 		{
 			patch4 
 			{
-				level (3 3);
+				level (1 1);
 				patchInfo {type patch;}
 			}
  
 			patch2 
 			{
-				level (3 3);
+				level (1 1);
 				parchInfo {type patch;}
 			}
 
 			patch0 
 			{
-				level (3 3);
+				level (1 1);
 				patchInfo {type patch;}
 			}
 

@@ -37,18 +37,26 @@ boundaryField
         //value           uniform (0 0 0);
         type            slip;
     }
+
+    fbOut
+    {
+
+        type            zeroGradient;
+    }
 	
     fbGasin
     {
-        /*type            flowRateInletVelocity;
-        flowRate        0.001;
-        value           uniform (0 0 0);*/
+
 
         type            fixedValue;
        // value           uniform (0 0 0.5725);
        // value           uniform (0 0 0.7633);
         value           uniform (0 0 0.9541);
-        //type            zeroGradient;
+
+
+        /*type            flowRateInletVelocity;
+        flowRate        0.001;
+        value           uniform (0 0 0);*/
 
 /*        type            groovyBC;
         variables       "Uend=vector(0,0,0.02);tEnd=0.1;";
@@ -74,13 +82,7 @@ boundaryField
 		);
     }
 
-    fbOut
-    {
-        /*type            fluxCorrectedVelocity; //inletOutlet;
-        value           uniform (0 0 0);
-        inletValue      uniform (0 0 0);*/
-        type            zeroGradient;
-    }
+
 }
 
 // ************************************************************************* //

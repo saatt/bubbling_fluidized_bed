@@ -28,7 +28,7 @@ FoamFile
 
 modelType "A"; // A or B
 
-couplingInterval 50;//100;
+couplingInterval 100;//100;
 
 voidFractionModel divided;//centre;//
 
@@ -53,7 +53,7 @@ forceModels
     //GidaspowDrag
     //BeetstraDrag
     //DiFeliceDrag
-    KochHillDrag
+   // //KochHillDrag
     gradPForce
     viscForce
     //fieldStore

@@ -20,34 +20,35 @@ FoamFile
     fbOut
     {
         type            patch;
-        nFaces          6888;
-        startFace       1871609;
+        nFaces          25;
+        startFace       29271;
     }
     CAD_patch1
     {
         type            wall;
         inGroups        1(wall);
-        nFaces          216123;
-        startFace       1878497;
+        nFaces          4246;
+        startFace       29296;
     }
     fbGasin
     {
-        type            patch;
-        nFaces          14334;
-        startFace       2094620;
+        type            wall;
+        inGroups        1(wall);
+        nFaces          96;
+        startFace       33542;
     }
     CAD_patch3
     {
         type            wall;
         inGroups        1(wall);
-        nFaces          3608;
-        startFace       2108954;
+        nFaces          96;
+        startFace       33638;
     }
     fbBioin
     {
         type            patch;
-        nFaces          6898;
-        startFace       2112562;
+        nFaces          28;
+        startFace       33734;
     }
 )
 
