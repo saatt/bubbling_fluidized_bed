@@ -51,7 +51,7 @@ boundaryField
         type            fixedValue;
        // value           uniform (0 0 0.5725);
        // value           uniform (0 0 0.7633);
-        value           uniform (0 0 0.9541);
+        value           uniform (0 0 2.9541);
 
 
         /*type            flowRateInletVelocity;
