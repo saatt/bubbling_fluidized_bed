@@ -32,8 +32,7 @@ FoamFile
     }
     fbGasin
     {
-        type            wall;
-        inGroups        1(wall);
+        type            patch;
         nFaces          96;
         startFace       33542;
     }
@@ -46,7 +45,8 @@ FoamFile
     }
     fbBioin
     {
-        type            patch;
+        type            wall;
+        inGroups        1(wall);
         nFaces          28;
         startFace       33734;
     }
