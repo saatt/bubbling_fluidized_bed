@@ -21,9 +21,9 @@ neigh_modify    delay 0
 # Material properties required for granular pair styles
 fix         m1 all property/global youngsModulus peratomtype 5e6 5e6
 fix         m2 all property/global poissonsRatio peratomtype 0.3 0.3
-fix         m3 all property/global coefficientRestitution peratomtypepair 2 1 0.5 0.5 0.5
-fix         m4 all property/global coefficientFriction peratomtypepair 2 1 0.55 0.55 0.55
-fix         m5 all property/global coefficientRollingFriction peratomtypepair 2 0 0.000016 0.000016 0.000016 
+fix         m3 all property/global coefficientRestitution peratomtypepair 2 0.79 0.645 0.645 0.5
+fix         m4 all property/global coefficientFriction peratomtypepair 2 0.8 0.675 0.675 0.55
+fix         m5 all property/global coefficientRollingFriction peratomtypepair 2 0.000016 0.000016 0.000016 0.000016 
 
 # pair style
 pair_style  gran model hertz tangential history # Hertzian without cohesion
@@ -40,7 +40,7 @@ fix  fbBioin all mesh/surface file ../DEM/STL/fluidizedbedBioin.stl type 1 scale
 fix  fbGasin all mesh/surface file ../DEM/STL/fluidizedbedGasin.stl type 1 scale 0.0254
 fix  fbOut all mesh/surface file ../DEM/STL/fluidizedbedOut.stl type 1 scale 0.0254
 
-#use the imported mesh as granular wall
+#use the imported mesh as granular wall 
 #fix  walls all wall/gran model hertz tangential history rolling_friction epsd2 mesh n_meshes 2 meshes fb fbGasin 
 fix	walls all wall/gran model hertz tangential history mesh n_meshes 4 meshes fb1 fb2  fbGasin fbBioin
 
@@ -48,7 +48,7 @@ fix	walls all wall/gran model hertz tangential history mesh n_meshes 4 meshes fb
 #particle distributions and insertion ### insert biomass  
 
 region     bc2 cylinder x 0.0 0.0444 0.0125 0.035 0.038 units box
-fix        pts2 all particletemplate/sphere 49979693 atom_type 2 density constant 294 radius constant 0.001               
+fix        pts2 all particletemplate/sphere 49979693 atom_type 2 density constant 294 radius constant 0.0005               
 fix        pdd2 all particledistribution/discrete 86028157 1 pts2 1.0
 #fix        ins2 all insert/stream seed 86028121 distributiontemplate pdd2 mass 0.002 massrate 0.0001 insert_every 2000 overlapcheck yes vel constant -0.1 0.0 0.0  insertion_face fbBioin ntry_mc 10000
 #extrude_length 5
@@ -81,4 +81,3 @@ compute_modify  thermo_temp dynamic yes
 dump        dmp all custom/vtk 1000 post/dump*.liggghts_restart.vtk id type x y z vx vy vz fx fy fz f_dragforce[1] f_dragforce[2] f_dragforce[3] radius 
 
 run 1
-
