@@ -49,9 +49,8 @@ boundaryField
 
 
         //type            fixedValue;
-       // value           uniform (0 0 0.5725);
-       // value           uniform (0 0 0.7633);
-       // value           uniform (0 0 0.9541);
+       // value           uniform (0 0 0.4208); Umf
+
        	type            uniformFixedValue;        
 	uniformValue     table
         (
