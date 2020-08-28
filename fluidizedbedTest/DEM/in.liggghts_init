@@ -47,11 +47,11 @@ fix  fbGasin all mesh/surface file STL/fluidizedbedGasin.stl type 1 scale 0.0254
 fix  fbOut all mesh/surface file STL/fluidizedbedOut.stl type 1 scale 0.0254
 
 #import mesh from cad:(three atom types)
-fix  fb1 all mesh/surface file STL/fluidizedbedriser1.stl type 3 scale 0.0254
-fix  fb2 all mesh/surface file STL/fluidizedbedriser2.stl type 3 scale 0.0254
-fix  fbBioin all mesh/surface file STL/fluidizedbedBioin.stl type 3 scale 0.0254
-fix  fbGasin all mesh/surface file STL/fluidizedbedGasin.stl type 3 scale 0.0254
-fix  fbOut all mesh/surface file STL/fluidizedbedOut.stl type 3 scale 0.0254
+#fix  fb1 all mesh/surface file STL/fluidizedbedriser1.stl type 3 scale 0.0254
+#fix  fb2 all mesh/surface file STL/fluidizedbedriser2.stl type 3 scale 0.0254
+#fix  fbBioin all mesh/surface file STL/fluidizedbedBioin.stl type 3 scale 0.0254
+#fix  fbGasin all mesh/surface file STL/fluidizedbedGasin.stl type 3 scale 0.0254
+#fix  fbOut all mesh/surface file STL/fluidizedbedOut.stl type 3 scale 0.0254
 
 #use the imported mesh as granular wall
 
