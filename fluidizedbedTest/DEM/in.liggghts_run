@@ -61,12 +61,12 @@ fix	walls all wall/gran model hertz tangential history mesh n_meshes 4 meshes fb
 
 #particle distributions and insertion ### insert biomass  
 
-region     bc2 cylinder x 0.0 0.0444 0.0125 0.035 0.038 units box
-fix        pts2 all particletemplate/sphere 49979693 atom_type 2 density constant 294 radius constant 0.0005               
-fix        pdd2 all particledistribution/discrete 86028157 1 pts2 1.0
-#fix        ins2 all insert/stream seed 86028121 distributiontemplate pdd2 mass 0.002 massrate 0.0001 insert_every 2000 overlapcheck yes vel constant -0.1 0.0 0.0  insertion_face fbBioin ntry_mc 10000
-#extrude_length 5
-fix        ins2 all insert/rate/region seed 86028121 distributiontemplate pdd2 mass 0.002 massrate 0.001 insert_every 1000 overlapcheck yes vel constant -0.01 0.0 0.0 region bc2 ntry_mc 10000
+#region     bc2 cylinder x 0.0 0.0444 0.0125 0.035 0.038 units box
+#fix        pts2 all particletemplate/sphere 49979693 atom_type 2 density constant 294 radius constant 0.0005               
+#fix        pdd2 all particledistribution/discrete 86028157 1 pts2 1.0
+##fix        ins2 all insert/stream seed 86028121 distributiontemplate pdd2 mass 0.002 massrate 0.0001 insert_every 2000 overlapcheck yes vel constant -0.1 0.0 0.0  insertion_face fbBioin ntry_mc 10000
+##extrude_length 5
+#fix        ins2 all insert/rate/region seed 86028121 distributiontemplate pdd2 mass 0.002 massrate 0.001 insert_every 1000 overlapcheck yes vel constant -0.01 0.0 0.0 region bc2 ntry_mc 10000
 
 # apply nve integration to all particles that are inserted as single particles
 fix         integr all nve/sphere
